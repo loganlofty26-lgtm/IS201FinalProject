@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Olympic Ping Pong</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:   #FFD700;
+      --silver: #C0C0C0;
+      --navy:   #0a1628;
+      --red:    #c0392b;
+      --green:  #27ae60;
+      --white:  #ffffff;
+    }
+
+    body {
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--white);
+      overflow: hidden;
+    }
+
+    #ui {
+      width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.5rem;
+    }
+
+    #level-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    #opponent-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    #opponent-flag {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    #score-board {
+      text-align: center;
+    }
+
+    #score {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+
+    #score span { color: var(--gold); }
+
+    #score-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-top: 2px;
+    }
+
+    #medals {
+      display: flex;
+      gap: 0.4rem;
+      font-size: 1.5rem;
+    }
+
+    .medal { opacity: 0.2; transition: opacity 0.4s; }
+    .medal.earned { opacity: 1; }
+
+    #canvas-wrap {
+      position: relative;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 40px rgba(255,215,0,0.25), 0 0 80px rgba(255,215,0,0.08);
+    }
+
+    canvas {
+      display: block;
+      cursor: none;
+    }
+
+    /* Overlay screens */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10,22,40,0.88);
+      text-align: center;
+      gap: 1rem;
+      padding: 2rem;
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay h2 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .overlay p {
+      font-size: 1rem;
+      color: var(--silver);
+      max-width: 380px;
+      line-height: 1.6;
+    }
+
+    .overlay .flag-big { font-size: 4rem; }
+
+    .btn {
+      margin-top: 0.5rem;
+      padding: 0.7rem 2.2rem;
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover { background: #ffe84d; transform: scale(1.03); }
+    .btn:active { transform: scale(0.98); }
+
+    #progress-bar-wrap {
+      width: 800px;
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      margin-top: 4px;
+    }
+
+    #progress-bar {
+      height: 100%;
+      background: var(--gold);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ui">
+  <div id="level-info">
+    <div id="opponent-flag">🏓</div>
+    <div id="opponent-name">Olympic Ping Pong</div>
+  </div>
+  <div id="score-board">
+    <div id="score"><span id="p-score">0</span> — <span id="a-score">0</span></div>
+    <div id="score-label">You &nbsp;|&nbsp; Opponent</div>
+  </div>
+  <div id="medals">
+    <div class="medal" id="m1">🥇</div>
+    <div class="medal" id="m2">🥇</div>
+    <div class="medal" id="m3">🥇</div>
+    <div class="medal" id="m4">🥇</div>
+    <div class="medal" id="m5">🥇</div>
+  </div>
+</div>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="800" height="500"></canvas>
+
+  <!-- START -->
+  <div class="overlay" id="screen-start">
+    <div class="flag-big">🏅</div>
+    <h2>Olympic Ping Pong</h2>
+    <p>Move your mouse to control the paddle. First to <strong>7 points</strong> wins the match. Beat all 5 countries to claim gold!</p>
+    <button class="btn" onclick="startGame()">Serve!</button>
+  </div>
+
+  <!-- WIN ROUND -->
+  <div class="overlay hidden" id="screen-win">
+    <div class="flag-big" id="win-flag"></div>
+    <h2 id="win-title">You Win!</h2>
+    <p id="win-msg"></p>
+    <button class="btn" id="win-btn" onclick="nextLevel()">Next Match</button>
+  </div>
+
+  <!-- LOSE ROUND -->
+  <div class="overlay hidden" id="screen-lose">
+    <div class="flag-big" id="lose-flag"></div>
+    <h2 style="color:#e74c3c;">Defeated!</h2>
+    <p id="lose-msg"></p>
+    <button class="btn" onclick="restartLevel()">Try Again</button>
+  </div>
+
+  <!-- CHAMPION -->
+  <div class="overlay hidden" id="screen-champ">
+    <div class="flag-big">🥇🎉🥇</div>
+    <h2>Olympic Champion!</h2>
+    <p>You defeated every country and claimed the gold medal. Legendary.</p>
+    <button class="btn" onclick="resetGame()">Play Again</button>
+  </div>
+
+</div>
+
+<script>
+  // ── Opponents ──────────────────────────────────────────────
+  const OPPONENTS = [
+    { name: "China",  flag: "🇨🇳", color: "#c0392b" },
+    { name: "Japan",  flag: "🇯🇵", color: "#e74c3c" },
+    { name: "Germany",flag: "🇩🇪", color: "#f39c12" },
+    { name: "Brazil", flag: "🇧🇷", color: "#27ae60" },
+    { name: "USA",    flag: "🇺🇸", color: "#2980b9" },
+  ];
+
+  const WIN_SCORE   = 7;
+  const BASE_SPEED  = 5;
+  const SPEED_INC   = 1.1;   // multiplier per level
+
+  // ── Canvas setup ──────────────────────────────────────────
+  const canvas = document.getElementById('c');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // ── State ─────────────────────────────────────────────────
+  let level, playerScore, aiScore, medals;
+  let ball, playerPaddle, aiPaddle;
+  let running, animId;
+  let mouseY = H / 2;
+
+  // ── Init structures ───────────────────────────────────────
+  function makeBall(lvl) {
+    const spd = BASE_SPEED * Math.pow(SPEED_INC, lvl);
+    const angle = (Math.random() * 60 - 30) * Math.PI / 180;
+    const dir   = Math.random() < 0.5 ? 1 : -1;
+    return {
+      x: W / 2, y: H / 2,
+      r: 8,
+      vx: spd * Math.cos(angle) * dir,
+      vy: spd * Math.sin(angle),
+      trail: []
+    };
+  }
+
+  function makePlayerPaddle() {
+    return { x: 18, y: H/2, w: 14, h: 80 };
+  }
+
+  function makeAiPaddle() {
+    return { x: W - 18 - 14, y: H/2, w: 14, h: 90 };
+  }
+
+  // ── Mouse tracking ────────────────────────────────────────
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouseY = e.clientY - rect.top;
+  });
+
+  // ── Game start / reset ────────────────────────────────────
+  function startGame() {
+    level       = 0;
+    playerScore = 0;
+    aiScore     = 0;
+    medals      = 0;
+    document.querySelectorAll('.medal').forEach(m => m.classList.remove('earned'));
+    hide('screen-start');
+    beginLevel();
+  }
+
+  function resetGame() {
+    hide('screen-champ');
+    startGame();
+  }
+
+  function beginLevel() {
+    const opp = OPPONENTS[level];
+    document.getElementById('opponent-name').textContent = opp.name;
+    document.getElementById('opponent-flag').textContent = opp.flag;
+    playerScore = 0;
+    aiScore     = 0;
+    updateScore();
+    updateProgress();
+    ball         = makeBall(level);
+    playerPaddle = makePlayerPaddle();
+    aiPaddle     = makeAiPaddle();
+    running      = true;
+    if (animId) cancelAnimationFrame(animId);
+    loop();
+  }
+
+  function restartLevel() {
+    hide('screen-lose');
+    beginLevel();
+  }
+
+  function nextLevel() {
+    hide('screen-win');
+    level++;
+    if (level >= OPPONENTS.length) {
+      show('screen-champ');
+      return;
+    }
+    beginLevel();
+  }
+
+  // ── Main loop ─────────────────────────────────────────────
+  function loop() {
+    if (!running) return;
+    update();
+    draw();
+    animId = requestAnimationFrame(loop);
+  }
+
+  // ── AI difficulty scales with level ───────────────────────
+  function aiSpeed() { return 2.5 + level * 0.9; }
+  function aiError()  { return 28 - level * 4; }   // random offset shrinks each level
+
+  // ── Update ────────────────────────────────────────────────
+  function update() {
+    // Player paddle follows mouse
+    playerPaddle.y = clamp(mouseY - playerPaddle.h / 2, 0, H - playerPaddle.h);
+
+    // AI paddle chases ball with imperfection
+    const aiTarget = ball.y - aiPaddle.h / 2 + (Math.random() * aiError() * 2 - aiError());
+    if (aiPaddle.y + aiPaddle.h / 2 < ball.y - 5)
+      aiPaddle.y = Math.min(aiPaddle.y + aiSpeed(), H - aiPaddle.h);
+    else if (aiPaddle.y + aiPaddle.h / 2 > ball.y + 5)
+      aiPaddle.y = Math.max(aiPaddle.y - aiSpeed(), 0);
+
+    // Ball trail
+    ball.trail.push({ x: ball.x, y: ball.y });
+    if (ball.trail.length > 8) ball.trail.shift();
+
+    // Move ball
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    // Top / bottom walls
+    if (ball.y - ball.r <= 0) { ball.y = ball.r; ball.vy *= -1; }
+    if (ball.y + ball.r >= H) { ball.y = H - ball.r; ball.vy *= -1; }
+
+    // Player paddle collision
+    if (
+      ball.vx < 0 &&
+      ball.x - ball.r <= playerPaddle.x + playerPaddle.w &&
+      ball.x - ball.r >= playerPaddle.x &&
+      ball.y >= playerPaddle.y &&
+      ball.y <= playerPaddle.y + playerPaddle.h
+    ) {
+      const hit = (ball.y - (playerPaddle.y + playerPaddle.h / 2)) / (playerPaddle.h / 2);
+      const angle = hit * 60 * Math.PI / 180;
+      const spd = Math.hypot(ball.vx, ball.vy) * 1.04;
+      ball.vx = spd * Math.cos(angle);
+      ball.vy = spd * Math.sin(angle);
+      ball.x  = playerPaddle.x + playerPaddle.w + ball.r;
+    }
+
+    // AI paddle collision
+    if (
+      ball.vx > 0 &&
+      ball.x + ball.r >= aiPaddle.x &&
+      ball.x + ball.r <= aiPaddle.x + aiPaddle.w &&
+      ball.y >= aiPaddle.y &&
+      ball.y <= aiPaddle.y + aiPaddle.h
+    ) {
+      const hit = (ball.y - (aiPaddle.y + aiPaddle.h / 2)) / (aiPaddle.h / 2);
+      const angle = hit * 60 * Math.PI / 180;
+      const spd = Math.hypot(ball.vx, ball.vy) * 1.02;
+      ball.vx = -spd * Math.cos(angle);
+      ball.vy =  spd * Math.sin(angle);
+      ball.x  = aiPaddle.x - ball.r;
+    }
+
+    // Scoring
+    if (ball.x < 0) {
+      aiScore++;
+      updateScore();
+      checkRoundOver() || resetBall();
+    }
+    if (ball.x > W) {
+      playerScore++;
+      updateScore();
+      checkRoundOver() || resetBall();
+    }
+  }
+
+  function resetBall() {
+    ball = makeBall(level);
+  }
+
+  function checkRoundOver() {
+    const opp = OPPONENTS[level];
+    if (playerScore >= WIN_SCORE) {
+      running = false;
+      medals++;
+      document.getElementById('m' + medals).classList.add('earned');
+      document.getElementById('win-flag').textContent   = opp.flag;
+      document.getElementById('win-title').textContent  = `You Beat ${opp.name}!`;
+      document.getElementById('win-msg').textContent    =
+        level < OPPONENTS.length - 1
+          ? `Great match! Next up: ${OPPONENTS[level+1].name} ${OPPONENTS[level+1].flag}. Brace yourself — they're faster.`
+          : `You've reached the final. One last match for the gold!`;
+      const btn = document.getElementById('win-btn');
+      btn.textContent = level < OPPONENTS.length - 1 ? 'Next Match' : 'Final Match!';
+      show('screen-win');
+      return true;
+    }
+    if (aiScore >= WIN_SCORE) {
+      running = false;
+      document.getElementById('lose-flag').textContent = opp.flag;
+      document.getElementById('lose-msg').textContent  =
+        `${opp.name} wins ${aiScore}–${playerScore}. No medal this round — try again!`;
+      show('screen-lose');
+      return true;
+    }
+    return false;
+  }
+
+  // ── Draw ──────────────────────────────────────────────────
+  function draw() {
+    // Background
+    ctx.fillStyle = '#0d1f3c';
+    ctx.fillRect(0, 0, W, H);
+
+    // Table lines
+    ctx.setLineDash([12, 10]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Net
+    for (let y = 0; y < H; y += 18) {
+      ctx.fillStyle = y % 36 === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.12)';
+      ctx.fillRect(W/2 - 2, y, 4, 10);
+    }
+
+    // Ball trail
+    ball.trail.forEach((pt, i) => {
+      const alpha = (i / ball.trail.length) * 0.35;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, ball.r * 0.75, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,215,0,${alpha})`;
+      ctx.fill();
+    });
+
+    // Ball
+    const grad = ctx.createRadialGradient(ball.x - 2, ball.y - 2, 1, ball.x, ball.y, ball.r);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(1, '#ffd700');
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur  = 14;
+    ctx.fill();
+    ctx.shadowBlur  = 0;
+
+    // Player paddle
+    drawPaddle(playerPaddle, '#3498db', '#5dade2');
+
+    // AI paddle — color changes per opponent
+    const oppColor = OPPONENTS[level]?.color || '#e74c3c';
+    drawPaddle(aiPaddle, oppColor, lighten(oppColor));
+  }
+
+  function drawPaddle(p, c1, c2) {
+    const g = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y + p.h);
+    g.addColorStop(0, c1);
+    g.addColorStop(1, c2);
+    ctx.fillStyle = g;
+    ctx.shadowColor = c1;
+    ctx.shadowBlur  = 10;
+    ctx.beginPath();
+    ctx.roundRect(p.x, p.y, p.w, p.h, 5);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Handle grip lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 4]);
+    for (let i = 1; i < 4; i++) {
+      const ly = p.y + (p.h / 4) * i;
+      ctx.beginPath(); ctx.moveTo(p.x + 2, ly); ctx.lineTo(p.x + p.w - 2, ly); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  function lighten(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, ((n >> 16) & 0xff) + 50);
+    const g = Math.min(255, ((n >> 8)  & 0xff) + 50);
+    const b = Math.min(255, ( n        & 0xff) + 50);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  // ── HUD helpers ───────────────────────────────────────────
+  function updateScore() {
+    document.getElementById('p-score').textContent = playerScore;
+    document.getElementById('a-score').textContent = aiScore;
+  }
+
+  function updateProgress() {
+    document.getElementById('progress-bar').style.width = (level / OPPONENTS.length * 100) + '%';
+  }
+
+  // ── Overlay helpers ───────────────────────────────────────
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+  // ── Util ──────────────────────────────────────────────────
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // ── Polyfill roundRect for older browsers ─────────────────
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.lineTo(x + w - r, y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r);
+      this.lineTo(x + w, y + h - r);
+      this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      this.lineTo(x + r, y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - r);
+      this.lineTo(x, y + r);
+      this.quadraticCurveTo(x, y, x + r, y);
+      this.closePath();
+    };
+  }
+
+  // Draw idle frame on load
+  (function idleFrame() {
+    ctx.fillStyle = '#0d1f3c';
+    ctx.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y += 18) {
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(W/2 - 2, y, 4, 10);
+    }
+  })();
+</script>
+</body>
+</html>

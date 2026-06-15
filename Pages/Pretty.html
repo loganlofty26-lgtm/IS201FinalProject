@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume — Alex Morgan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #1a1a1a;
+      --mid:    #6b6b6b;
+      --rule:   #d4d0c8;
+      --cream:  #f7f5f0;
+      --accent: #2a5c45;
+      --paper:  #ffffff;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    .page {
+      background: var(--paper);
+      width: 100%;
+      max-width: 820px;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      position: relative;
+    }
+
+    .page::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 5px;
+      background: var(--accent);
+    }
+
+    header {
+      padding: 3.5rem 3.5rem 2.5rem 4rem;
+      border-bottom: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 1rem;
+    }
+
+    .name {
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: var(--ink);
+    }
+
+    .name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .title-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-top: 0.75rem;
+    }
+
+    .contact-col {
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 300;
+      line-height: 2;
+      color: var(--mid);
+    }
+
+    .contact-col a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .contact-col a:hover { border-color: var(--accent); }
+
+    .body {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+    }
+
+    .main  { padding: 2.5rem 2.5rem 3rem 4rem; border-right: 1px solid var(--rule); }
+    .aside { padding: 2.5rem 2rem 3rem 2rem; }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    section { margin-bottom: 2.8rem; }
+    section:last-child { margin-bottom: 0; }
+
+    .summary {
+      font-size: 1.22rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+
+    .job { margin-bottom: 2rem; }
+    .job:last-child { margin-bottom: 0; }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .job-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .job-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--mid);
+      letter-spacing: 0.08em;
+    }
+
+    .job-company {
+      font-style: italic;
+      color: var(--mid);
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .job ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .job ul li {
+      padding-left: 1.1rem;
+      position: relative;
+      font-size: 0.97rem;
+      color: #333;
+      line-height: 1.65;
+      margin-bottom: 0.3rem;
+    }
+
+    .job ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .job-divider {
+      border: none;
+      border-top: 1px dashed var(--rule);
+      margin: 1.5rem 0;
+    }
+
+    .skill-group { margin-bottom: 1.8rem; }
+
+    .skill-group-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 0.55rem;
+    }
+
+    .skill-pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill {
+      background: var(--cream);
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.8rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .edu-item { margin-bottom: 1.2rem; }
+    .edu-degree {
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .edu-school {
+      font-style: italic;
+      color: var(--mid);
+      font-size: 0.88rem;
+    }
+    .edu-year {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--mid);
+      letter-spacing: 0.1em;
+      margin-top: 0.15rem;
+    }
+
+    @media (max-width: 640px) {
+      header { grid-template-columns: 1fr; padding: 2.5rem 1.75rem 2rem 2rem; }
+      .contact-col { text-align: left; }
+      .body { grid-template-columns: 1fr; }
+      .main { padding: 2rem 1.75rem 2rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
+      .aside { padding: 2rem 1.75rem 2.5rem 2rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <h1 class="name">Alex <em>Morgan</em></h1>
+      <p class="title-tag">Product Designer &amp; Creative Technologist</p>
+    </div>
+    <div class="contact-col">
+      <a href="mailto:alex@example.com">alex@example.com</a><br>
+      <a href="https://alexmorgan.work" target="_blank">alexmorgan.work</a><br>
+      <a href="https://linkedin.com/in/alexmorgan" target="_blank">linkedin</a>
+      &nbsp;/&nbsp;
+      <a href="https://github.com/alexmorgan" target="_blank">github</a><br>
+      San Francisco, CA
+    </div>
+  </header>
+
+  <div class="body">
+
+    <main class="main">
+
+      <section>
+        <p class="section-label">About</p>
+        <p class="summary">
+          Designer with a developer's instincts — I work at the seam between how something looks
+          and how it works. Five years of building digital products across SaaS, consumer apps,
+          and early-stage startups. Happiest when the brief is still fuzzy and the problem is
+          genuinely hard.
+        </p>
+      </section>
+
+      <section>
+        <p class="section-label">Experience</p>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Senior Product Designer</span>
+            <span class="job-date">2023 — Present</span>
+          </div>
+          <p class="job-company">Veritas Labs, San Francisco</p>
+          <ul>
+            <li>Led end-to-end design for the core analytics dashboard, reducing task completion time by 34%.</li>
+            <li>Established a component library adopted across three product teams.</li>
+            <li>Partnered with engineering to ship a no-code workflow builder from 0→1.</li>
+          </ul>
+        </div>
+
+        <hr class="job-divider">
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Product Designer</span>
+            <span class="job-date">2021 — 2023</span>
+          </div>
+          <p class="job-company">Fieldwork Studio, Remote</p>
+          <ul>
+            <li>Owned design for four client products simultaneously across fintech and healthtech.</li>
+            <li>Ran user research sprints that directly shaped two pivots in product direction.</li>
+            <li>Mentored two junior designers through structured weekly critiques.</li>
+          </ul>
+        </div>
+
+        <hr class="job-divider">
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">UX / UI Designer</span>
+            <span class="job-date">2019 — 2021</span>
+          </div>
+          <p class="job-company">Broadside Agency, Portland</p>
+          <ul>
+            <li>Designed websites and campaign microsites for regional brands and nonprofits.</li>
+            <li>Introduced Figma to the team, cutting handoff cycles in half.</li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="aside">
+
+      <section>
+        <p class="section-label">Skills</p>
+
+        <div class="skill-group">
+          <p class="skill-group-name">Design</p>
+          <div class="skill-pill-list">
+            <span class="pill">Figma</span>
+            <span class="pill">Prototyping</span>
+            <span class="pill">Design Systems</span>
+            <span class="pill">UX Research</span>
+            <span class="pill">Wireframing</span>
+            <span class="pill">Motion</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <p class="skill-group-name">Code</p>
+          <div class="skill-pill-list">
+            <span class="pill">HTML &amp; CSS</span>
+            <span class="pill">React</span>
+            <span class="pill">TypeScript</span>
+            <span class="pill">Git</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <p class="skill-group-name">Methods</p>
+          <div class="skill-pill-list">
+            <span class="pill">User Interviews</span>
+            <span class="pill">A/B Testing</span>
+            <span class="pill">Agile</span>
+            <span class="pill">Accessibility</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="section-label">Education</p>
+
+        <div class="edu-item">
+          <p class="edu-degree">B.F.A. Graphic Design</p>
+          <p class="edu-school">Oregon State University</p>
+          <p class="edu-year">2015 — 2019</p>
+        </div>
+
+        <div class="edu-item">
+          <p class="edu-degree">Human-Computer Interaction</p>
+          <p class="edu-school">Coursera / Google</p>
+          <p class="edu-year">Certificate, 2021</p>
+        </div>
+      </section>
+
+      <section>
+        <p class="section-label">Languages</p>
+        <p style="font-size:0.9rem; color: var(--mid); line-height:1.9;">
+          English <span style="color:var(--accent); font-size:0.7rem;">Native</span><br>
+          Spanish <span style="color:var(--accent); font-size:0.7rem;">Conversational</span><br>
+          French <span style="color:var(--accent); font-size:0.7rem;">Basic</span>
+        </p>
+      </section>
+
+    </aside>
+  </div>
+
+</div>
+</body>
+</html>
